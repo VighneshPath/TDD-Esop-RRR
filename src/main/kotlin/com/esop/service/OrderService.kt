@@ -35,7 +35,8 @@ class OrderService(private val userRecords: UserRecords, private val government:
         val buyer = userRecords.getUser(buyerOrder.getUserName())!!
         val seller = userRecords.getUser(sellerOrder.getUserName())!!
         var platformFee = 0L
-        var taxableAmount = government.getTaxableAmount(sellerOrder.esopType,sellerOrder.getPrice(),currentTradeQuantity)
+        val taxableAmount =
+            government.getTaxableAmount(sellerOrder.esopType, sellerOrder.getPrice(), currentTradeQuantity)
         if (sellerOrder.esopType == "NON_PERFORMANCE")
             platformFee = round(sellAmount * TWO_PERCENT).toLong()
 
