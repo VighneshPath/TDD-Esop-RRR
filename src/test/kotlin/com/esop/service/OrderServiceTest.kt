@@ -1,6 +1,7 @@
 package com.esop.service
 
 import com.esop.repository.UserRecords
+import com.esop.schema.Government
 import com.esop.schema.Order
 import com.esop.schema.User
 import com.esop.service.OrderService.Companion.buyOrders
@@ -20,7 +21,7 @@ class OrderServiceTest {
     @BeforeEach
     fun `It should create user`() {
         userRecords = UserRecords()
-        orderService = OrderService(userRecords)
+        orderService = OrderService(userRecords, Government())
 
         val buyer1 = User("Sankaranarayanan", "M", "7550276216", "sankaranarayananm@sahaj.ai", "sankar")
         val buyer2 = User("Aditya", "Tiwari", "", "aditya@sahaj.ai", "aditya")

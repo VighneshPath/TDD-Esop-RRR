@@ -12,7 +12,7 @@ import kotlin.math.round
 private const val TWO_PERCENT = 0.02
 
 @Singleton
-class OrderService(private val userRecords: UserRecords) {
+class OrderService(private val userRecords: UserRecords, private val government: Government) {
     companion object {
         private var orderId = 1L
 
@@ -35,13 +35,12 @@ class OrderService(private val userRecords: UserRecords) {
         val buyer = userRecords.getUser(buyerOrder.getUserName())!!
         val seller = userRecords.getUser(sellerOrder.getUserName())!!
         var platformFee = 0L
-
-
+        var taxableAmount = government.getTaxableAmount(sellerOrder.esopType,sellerOrder.getPrice(),currentTradeQuantity)
         if (sellerOrder.esopType == "NON_PERFORMANCE")
             platformFee = round(sellAmount * TWO_PERCENT).toLong()
 
-        updateWalletBalances(sellAmount, platformFee, buyer, seller)
-
+        updateWalletBalances(sellAmount, platformFee, taxableAmount, buyer, seller)
+        government.payTax(taxableAmount)
 
         seller.transferLockedESOPsTo(buyer, EsopTransferRequest(sellerOrder.esopType, currentTradeQuantity))
 
@@ -53,12 +52,12 @@ class OrderService(private val userRecords: UserRecords) {
     private fun updateWalletBalances(
         sellAmount: Long,
         platformFee: Long,
+        taxableAmount: Long,
         buyer: User,
         seller: User
     ) {
-        val adjustedSellAmount = sellAmount - platformFee
+        val adjustedSellAmount = sellAmount - platformFee - taxableAmount
         addPlatformFee(platformFee)
-
         buyer.userWallet.removeMoneyFromLockedState(sellAmount)
         seller.userWallet.addMoneyToWallet(adjustedSellAmount)
     }
