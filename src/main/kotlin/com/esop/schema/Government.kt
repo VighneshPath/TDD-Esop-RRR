@@ -12,6 +12,10 @@ const val GREATER_THAN_50000_TAX_PERCENT_PERF = 0.025
 const val GREATER_THAN_50000_TAX_PERCENT_NON_PERF = 0.015
 
 
+private const val HIGH_TAX_SLAB = 50000
+
+private const val LOW_TAX_SLAB = 100
+
 @Singleton
 class Government {
     private var funds: Long = 0
@@ -37,7 +41,7 @@ class Government {
                 0L
             }
         }
-        if(quantity < 50000){
+        if(quantity < HIGH_TAX_SLAB){
             taxableAmount = reduceToCap(taxableAmount, esopType)
         }
         return taxableAmount
@@ -61,13 +65,13 @@ class Government {
 
     private fun getTaxForNonPerformance(amountPerEsop: Long, quantity: Long): Long {
         val taxPercent: Double = when{
-            quantity > 50000->{
+            quantity > HIGH_TAX_SLAB ->{
                 GREATER_THAN_50000_TAX_PERCENT_NON_PERF
             }
-            quantity in 100..49999 ->{
+            quantity in LOW_TAX_SLAB until HIGH_TAX_SLAB ->{
                 GREATER_THAN_100_TAX_PERCENT_NON_PERF
             }
-            quantity<100 -> {
+            quantity< LOW_TAX_SLAB -> {
                 LESS_THAN_100_TAX_PERCENT_NON_PERF
             }
 
@@ -79,13 +83,13 @@ class Government {
 
     private fun getTaxForPerformance(amountPerEsop: Long, quantity: Long) : Long{
         val taxPercent: Double = when{
-            quantity > 50000->{
+            quantity > HIGH_TAX_SLAB ->{
                 GREATER_THAN_50000_TAX_PERCENT_PERF
             }
-            quantity in 100..49999 ->{
+            quantity in LOW_TAX_SLAB until HIGH_TAX_SLAB ->{
                 GREATER_THAN_100_TAX_PERCENT_PERF
             }
-            quantity<100 -> {
+            quantity< LOW_TAX_SLAB -> {
                 LESS_THAN_100_TAX_PERCENT_PERF
             }
 
