@@ -1,6 +1,7 @@
 package com.esop.service
 
 import com.esop.repository.UserRecords
+import com.esop.schema.Government
 import com.esop.schema.Order
 import com.esop.schema.User
 import com.esop.service.OrderService.Companion.buyOrders
@@ -16,11 +17,13 @@ class OrderServiceTest {
 
     private lateinit var userRecords:UserRecords
     private lateinit var orderService:OrderService
+    private lateinit var government: Government
 
     @BeforeEach
     fun `It should create user`() {
         userRecords = UserRecords()
-        orderService = OrderService(userRecords)
+        government = Government()
+        orderService = OrderService(userRecords, government)
 
         val buyer1 = User("Sankaranarayanan", "M", "7550276216", "sankaranarayananm@sahaj.ai", "sankar")
         val buyer2 = User("Aditya", "Tiwari", "", "aditya@sahaj.ai", "aditya")
@@ -62,7 +65,6 @@ class OrderServiceTest {
         //Assert
         assertTrue(sellOrders.contains(sellOrder))
     }
-
     @Test
     fun `It should match BUY order for existing SELL order`() {
         //Arrange
@@ -77,11 +79,11 @@ class OrderServiceTest {
 
         //Act
         orderService.placeOrder(buyOrder)
-
         //Assert
+
         assertEquals(40, userRecords.getUser("kajal")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(10, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(98, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(98L-government.getTaxableAmount("NON_PERFORMANCE", 10, 10), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getFreeMoney())
     }
 
@@ -109,8 +111,8 @@ class OrderServiceTest {
         assertEquals(40, userRecords.getUser("kajal")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(40, userRecords.getUser("arun")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(20, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(98, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
-        assertEquals(98, userRecords.getUser("arun")!!.userWallet.getFreeMoney())
+        assertEquals(98-government.getTaxableAmount("NON_PERFORMANCE", 10, 10), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(98-government.getTaxableAmount("NON_PERFORMANCE", 10, 10), userRecords.getUser("arun")!!.userWallet.getFreeMoney())
         assertEquals(50, userRecords.getUser("sankar")!!.userWallet.getLockedMoney())
         assertEquals("PARTIAL", buyOrders[buyOrders.indexOf(buyOrderBySankar)].orderStatus)
         assertEquals(
@@ -147,8 +149,8 @@ class OrderServiceTest {
         assertEquals(40, userRecords.getUser("kajal")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(40, userRecords.getUser("arun")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(20, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(98, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
-        assertEquals(98, userRecords.getUser("arun")!!.userWallet.getFreeMoney())
+        assertEquals(98-government.getTaxableAmount("NON_PERFORMANCE", 10, 10), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(98-government.getTaxableAmount("NON_PERFORMANCE", 10, 10), userRecords.getUser("arun")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getLockedMoney())
         assertEquals(
             "COMPLETED",
@@ -183,7 +185,7 @@ class OrderServiceTest {
         //Assert
         assertEquals(40, userRecords.getUser("kajal")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(5, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(49, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(49-government.getTaxableAmount("NON_PERFORMANCE", 10, 5), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getLockedMoney())
         assertEquals(
             "COMPLETED",
@@ -214,7 +216,7 @@ class OrderServiceTest {
         //Assert
         assertEquals(40, userRecords.getUser("kajal")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(10, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(98, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(98-government.getTaxableAmount("NON_PERFORMANCE", 10, 10), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
         assertEquals(50, userRecords.getUser("sankar")!!.userWallet.getLockedMoney())
         assertEquals(
             "PARTIAL",
@@ -251,7 +253,7 @@ class OrderServiceTest {
         assertEquals(25, userRecords.getUser("kajal")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(10, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(10, userRecords.getUser("aditya")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(196, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(196-government.getTaxableAmount("NON_PERFORMANCE", 10, 20), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getFreeMoney())
         assertEquals("PARTIAL", sellOrders[sellOrders.indexOf(sellOrderByKajal)].orderStatus)
@@ -293,7 +295,7 @@ class OrderServiceTest {
         assertEquals(0, userRecords.getUser("arun")!!.userWallet.getFreeMoney())
 
         assertEquals(10, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(98 + 98, userRecords.getUser("sankar")!!.userWallet.getFreeMoney())
+        assertEquals(98 + 98-government.getTaxableAmount("NON_PERFORMANCE", 10, 10)-government.getTaxableAmount("NON_PERFORMANCE", 10, 10), userRecords.getUser("sankar")!!.userWallet.getFreeMoney())
 
         assertEquals(
             "COMPLETED",
@@ -328,7 +330,7 @@ class OrderServiceTest {
         //Assert
         assertEquals(40, userRecords.getUser("kajal")!!.userPerformanceInventory.getFreeInventory())
         assertEquals(10, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(100, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(100-government.getTaxableAmount("PERFORMANCE", 10, 10), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getFreeMoney())
     }
 
@@ -351,7 +353,7 @@ class OrderServiceTest {
         //Assert
         assertEquals(40, userRecords.getUser("kajal")!!.userPerformanceInventory.getFreeInventory())
         assertEquals(10, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(100, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(100-government.getTaxableAmount("PERFORMANCE", 10, 10), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getFreeMoney())
     }
 
@@ -373,7 +375,7 @@ class OrderServiceTest {
         //Assert
         assertEquals(40, userRecords.getUser("kajal")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(10, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(98, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(98-government.getTaxableAmount("NON_PERFORMANCE", 10, 10), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getFreeMoney())
     }
 
@@ -402,8 +404,8 @@ class OrderServiceTest {
         assertEquals(40, userRecords.getUser("kajal")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(40, userRecords.getUser("arun")!!.userPerformanceInventory.getFreeInventory())
         assertEquals(20, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(98, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
-        assertEquals(100, userRecords.getUser("arun")!!.userWallet.getFreeMoney())
+        assertEquals(98-government.getTaxableAmount("NON_PERFORMANCE", 10, 10), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(100-government.getTaxableAmount("PERFORMANCE", 10, 10), userRecords.getUser("arun")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getLockedMoney())
         assertEquals(
             "COMPLETED",
@@ -445,8 +447,8 @@ class OrderServiceTest {
         assertEquals(40, userRecords.getUser("kajal")!!.userPerformanceInventory.getFreeInventory())
         assertEquals(40, userRecords.getUser("arun")!!.userPerformanceInventory.getFreeInventory())
         assertEquals(20, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(100, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
-        assertEquals(100, userRecords.getUser("arun")!!.userWallet.getFreeMoney())
+        assertEquals(100-government.getTaxableAmount("PERFORMANCE", 10, 10), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(100-government.getTaxableAmount("PERFORMANCE", 10, 10), userRecords.getUser("arun")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getLockedMoney())
         assertEquals(
             "COMPLETED",
@@ -489,8 +491,8 @@ class OrderServiceTest {
         assertEquals(40, userRecords.getUser("kajal")!!.userPerformanceInventory.getFreeInventory())
         assertEquals(40, userRecords.getUser("arun")!!.userPerformanceInventory.getFreeInventory())
         assertEquals(20, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(100, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
-        assertEquals(100, userRecords.getUser("arun")!!.userWallet.getFreeMoney())
+        assertEquals(100-government.getTaxableAmount("PERFORMANCE", 10, 10), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(100-government.getTaxableAmount("PERFORMANCE", 10, 10), userRecords.getUser("arun")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getLockedMoney())
         assertEquals(
             "COMPLETED",
@@ -531,8 +533,8 @@ class OrderServiceTest {
         assertEquals(40, userRecords.getUser("kajal")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(40, userRecords.getUser("arun")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(20, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(98, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
-        assertEquals(98, userRecords.getUser("arun")!!.userWallet.getFreeMoney())
+        assertEquals(98-government.getTaxableAmount("NON_PERFORMANCE", 10, 10), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(98-government.getTaxableAmount("NON_PERFORMANCE", 10, 10), userRecords.getUser("arun")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getLockedMoney())
         assertEquals(
             "COMPLETED",
@@ -573,8 +575,8 @@ class OrderServiceTest {
         assertEquals(40, userRecords.getUser("kajal")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(40, userRecords.getUser("arun")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(20, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(196, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
-        assertEquals(98, userRecords.getUser("arun")!!.userWallet.getFreeMoney())
+        assertEquals(196-government.getTaxableAmount("NON_PERFORMANCE", 20, 10), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(98-government.getTaxableAmount("NON_PERFORMANCE", 10, 10), userRecords.getUser("arun")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getLockedMoney())
         assertEquals(
             "COMPLETED",
@@ -614,8 +616,8 @@ class OrderServiceTest {
         assertEquals(40, userRecords.getUser("kajal")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(40, userRecords.getUser("arun")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(20, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(196, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
-        assertEquals(98, userRecords.getUser("arun")!!.userWallet.getFreeMoney())
+        assertEquals(196-government.getTaxableAmount("NON_PERFORMANCE", 20, 10), userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(98-government.getTaxableAmount("NON_PERFORMANCE", 10, 10), userRecords.getUser("arun")!!.userWallet.getFreeMoney())
         assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getLockedMoney())
         assertEquals(
             "COMPLETED",
