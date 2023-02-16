@@ -1,6 +1,9 @@
 package com.esop.schema
 
+import com.esop.exceptions.AmountLessThanZeroException
+import com.esop.exceptions.QuantityLessThanZeroException
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.math.roundToLong
@@ -137,6 +140,28 @@ class GovernmentTest {
             (GREATER_THAN_50000_TAX_PERCENT_PERF * quantity * amountPerEsop).roundToLong(),
             taxableAmount
         )
+    }
+
+    @Test
+    fun `should throw an exception if quantity is non positive`(){
+        val amountPerEsop = 10L
+        val quantity = -1L
+        val esopType = "NON_PERFORMANCE"
+
+        assertThrows(QuantityLessThanZeroException::class.java){
+            government.getTaxableAmount(esopType, amountPerEsop, quantity)
+        }
+    }
+
+    @Test
+    fun `should throw an exception if amount is non positive`(){
+        val amountPerEsop = -1L
+        val quantity = 1L
+        val esopType = "NON_PERFORMANCE"
+
+        assertThrows(AmountLessThanZeroException::class.java){
+            government.getTaxableAmount(esopType, amountPerEsop, quantity)
+        }
     }
 
 }

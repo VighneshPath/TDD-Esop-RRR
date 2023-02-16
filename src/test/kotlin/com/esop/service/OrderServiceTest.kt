@@ -78,12 +78,12 @@ class OrderServiceTest {
 
         //Act
         orderService.placeOrder(buyOrder)
-
+        val govTax = 0
         //Assert
         assertEquals(40, userRecords.getUser("kajal")!!.userNonPerfInventory.getFreeInventory())
         assertEquals(10, userRecords.getUser("sankar")!!.userNonPerfInventory.getFreeInventory())
-        assertEquals(98, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
-        assertEquals(0, userRecords.getUser("sankar")!!.userWallet.getFreeMoney())
+        assertEquals(98 - govTax, userRecords.getUser("kajal")!!.userWallet.getFreeMoney())
+        assertEquals(0 - govTax, userRecords.getUser("sankar")!!.userWallet.getFreeMoney())
     }
 
     @Test

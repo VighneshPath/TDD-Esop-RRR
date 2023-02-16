@@ -1,5 +1,7 @@
 package com.esop.schema
 
+import com.esop.exceptions.AmountLessThanZeroException
+import com.esop.exceptions.QuantityLessThanZeroException
 import jakarta.inject.Singleton
 import kotlin.math.roundToLong
 
@@ -27,6 +29,8 @@ class Government {
     }
 
     fun getTaxableAmount(esopType: String, amountPerEsop: Long, quantity: Long): Long {
+        if(quantity < 0) throw QuantityLessThanZeroException()
+        if(amountPerEsop < 0) throw AmountLessThanZeroException()
         var taxableAmount: Long = when (esopType) {
             "PERFORMANCE" -> {
                 getTaxForPerformance(amountPerEsop, quantity)
