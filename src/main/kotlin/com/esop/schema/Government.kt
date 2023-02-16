@@ -24,7 +24,7 @@ class Government {
     }
 
     fun getTaxableAmount(esopType: String, amountPerEsop: Long, quantity: Long): Long {
-        val taxableAmount: Long = when (esopType) {
+        var taxableAmount: Long = when (esopType) {
             "PERFORMANCE" -> {
                 getTaxForPerformance(amountPerEsop, quantity)
             }
@@ -35,6 +35,25 @@ class Government {
 
             else -> {
                 0L
+            }
+        }
+        if(quantity < 50000){
+            taxableAmount = reduceToCap(taxableAmount, esopType)
+        }
+        return taxableAmount
+    }
+
+    private fun reduceToCap(taxableAmount: Long, esopType: String): Long {
+        when(esopType){
+            "NON_PERFORMANCE"->{
+                if(taxableAmount > 20){
+                    return 20L
+                }
+            }
+            "PERFORMANCE"->{
+                if(taxableAmount > 50){
+                    return 50L
+                }
             }
         }
         return taxableAmount
