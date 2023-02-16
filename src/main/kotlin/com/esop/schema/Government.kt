@@ -1,7 +1,6 @@
 package com.esop.schema
 
 import jakarta.inject.Singleton
-import jdk.jfr.DataAmount
 import kotlin.math.roundToLong
 
 const val LESS_THAN_100_TAX_PERCENT_PERF = 0.02
@@ -13,17 +12,17 @@ const val GREATER_THAN_50000_TAX_PERCENT_NON_PERF = 0.015
 
 
 private const val HIGH_TAX_SLAB = 50000
-
 private const val LOW_TAX_SLAB = 100
+private const val NON_PERFORMANCE_CAP = 20L
+private const val PERFORMANCE_CAP = 50L
 
 @Singleton
 class Government {
     private var funds: Long = 0
 
 
-
     fun payTax(taxableAmount: Long): Boolean {
-        funds+=taxableAmount
+        funds += taxableAmount
         return true
     }
 
@@ -49,14 +48,14 @@ class Government {
 
     private fun reduceToCap(taxableAmount: Long, esopType: String): Long {
         when(esopType){
-            "NON_PERFORMANCE"->{
-                if(taxableAmount > 20){
-                    return 20L
+            "NON_PERFORMANCE"-> {
+                if (taxableAmount > NON_PERFORMANCE_CAP) {
+                    return NON_PERFORMANCE_CAP
                 }
             }
-            "PERFORMANCE"->{
-                if(taxableAmount > 50){
-                    return 50L
+            "PERFORMANCE"-> {
+                if (taxableAmount > PERFORMANCE_CAP) {
+                    return PERFORMANCE_CAP
                 }
             }
         }
